@@ -1,4 +1,4 @@
-﻿using System.Numerics;
+using System.Numerics;
 using Content.Server.Administration.Logs;
 using Content.Server.Cargo.Components;
 using Content.Server.Chat.Systems;
@@ -54,6 +54,12 @@ public sealed partial class RequisitionsSystem : SharedRequisitionsSystem
         });
 
         Subs.CVar(_config, CMCVars.RMCRequisitionsBalanceGain, v => _gain = v, true);
+    }
+
+    public void AddBalance(int pointsToAdd)
+    {
+        var account = GetAccount();
+        account.Comp.Balance += pointsToAdd;
     }
 
     private void OnComputerMapInit(Entity<RequisitionsComputerComponent> ent, ref MapInitEvent args)
