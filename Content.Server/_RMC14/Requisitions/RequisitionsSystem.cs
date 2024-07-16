@@ -36,6 +36,7 @@ public sealed partial class RequisitionsSystem : SharedRequisitionsSystem
     private static readonly EntProtoId AccountId = "RMCASRSAccount";
     private const string PaperRequisitionInvoice = "RMCPaperRequisitionInvoice";
 
+    private int _starting;
     private int _gain;
 
     public override void Initialize()
@@ -53,7 +54,8 @@ public sealed partial class RequisitionsSystem : SharedRequisitionsSystem
             subs.Event<RequisitionsPlatformMsg>(OnPlatform);
         });
 
-        Subs.CVar(_config, CMCVars.RMCRequisitionsBalanceGain, v => _gain = v, true);
+        Subs.CVar(_config, RMCCVars.RMCRequisitionsStartingBalance, v => _starting = v, true);
+        Subs.CVar(_config, RMCCVars.RMCRequisitionsBalanceGain, v => _gain = v, true);
     }
 
     public void AddBalance(int pointsToAdd)
@@ -442,7 +444,7 @@ public sealed partial class RequisitionsSystem : SharedRequisitionsSystem
             {
                 account.Started = true;
                 var marines = Count<MarineComponent>();
-                account.Balance = marines * account.StartingDollarsPerMarine;
+                account.Balance = _starting + marines * account.StartingDollarsPerMarine;
                 Dirty(uid, account);
 
                 updateUI = true;
