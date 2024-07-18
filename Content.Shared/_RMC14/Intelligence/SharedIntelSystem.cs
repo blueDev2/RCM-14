@@ -8,16 +8,19 @@ using Content.Shared.Interaction;
 using Content.Shared.Interaction.Events;
 using Content.Shared.Objectives.Components;
 using Content.Shared.Objectives.Systems;
+using Content.Shared.Paper;
 using Content.Shared.Popups;
 using Content.Shared.Standing;
+using Content.Shared.UserInterface;
 
 namespace Content.Shared._RMC14.Intelligence;
 
 public abstract partial class SharedIntelSystem : EntitySystem
 {
-    [Dependency] private readonly SharedDoAfterSystem _doAfter = default!;
-    [Dependency] private readonly SkillsSystem _skills = default!;
-    [Dependency] private readonly SharedPopupSystem _popupSystem = default!;
+    //[Dependency] private readonly SharedDoAfterSystem _doAfter = default!;
+    //[Dependency] private readonly SkillsSystem _skills = default!;
+    //[Dependency] private readonly SharedPopupSystem _popupSystem = default!;
+    //[Dependency] private readonly SharedUserInterfaceSystem _uiSystem = default!;
     //[Dependency] private readonly SharedObjectivesSystem _objectivesSystem = default!;
 
 
@@ -28,9 +31,6 @@ public abstract partial class SharedIntelSystem : EntitySystem
     public override void Initialize()
     {
         base.Initialize();
-
-        SubscribeLocalEvent<IntelComponent, InteractHandEvent>(OnInteractIntelInHand);
-        SubscribeLocalEvent<IntelComponent, DoAfterAnalyzeIntelEvent>(OnIntelAnalysisCompletion);
     }
 
 
@@ -64,28 +64,6 @@ public abstract partial class SharedIntelSystem : EntitySystem
         return false;
     }
 
-    public void OnIntelAnalysisCompletion(EntityUid ent, IntelComponent comp, DoAfterAnalyzeIntelEvent args)
-    {
-
-    }
-
-    public void OnInteractIntelInHand(EntityUid ent, IntelComponent comp, InteractHandEvent args)
-    {
-        if (!_skills.HasSkills(ent, in RequiredIntelSkills))
-        {
-            _popupSystem.PopupClient(Loc.GetString("insufficient-intel-skill"), ent);
-            return;
-        }
-
-        var ev = new DoAfterAnalyzeIntelEvent();
-        var doAfter = new DoAfterArgs(EntityManager, ent, comp.AnalyzeDuration, ev, null)
-        {
-            BreakOnMove = true
-        };
-        _doAfter.TryStartDoAfter(doAfter);
-        _popupSystem.PopupClient(Loc.GetString("start-analyzing-intel"), ent);
-
-    }
 
     public bool AddIntelItems(int NumberOfItems)
     {
