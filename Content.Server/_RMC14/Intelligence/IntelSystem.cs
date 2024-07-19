@@ -71,7 +71,7 @@ public sealed partial class IntelSystem : SharedIntelSystem
         }
 
 
-        _mind.AddObjective(analyzer, mindComp, )
+        _mind.AddObjective(analyzer, mindComp, );
     }
 
     public void OnInteractIntelInHand(EntityUid ent, IntelComponent comp, UseInHandEvent args)

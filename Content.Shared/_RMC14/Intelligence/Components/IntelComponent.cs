@@ -12,8 +12,6 @@ public sealed partial class IntelComponent : Component
     /// </summary>
     public int AnalyzeDuration = 2;
 
-    public double PointsAward = 0.2;
-
     /// <summary>
     /// Hints that will be included in the paper component of the intel.
     /// Should never be higher than 4.
