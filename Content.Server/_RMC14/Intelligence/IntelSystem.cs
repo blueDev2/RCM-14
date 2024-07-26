@@ -49,17 +49,16 @@ public sealed partial class IntelSystem : SharedIntelSystem
             return;
         }
 
-        var retrievalTargets = new EntityQueryEnumerator<GiveIntelOnRetrievalComponent>();
+        var zonedRetrievalTargets = GetAllRetrievalTargetsInDropZones();
 
-        while (retrievalTargets.MoveNext(out var ent, out var comp))
+        foreach (var item in zonedRetrievalTargets)
         {
-            RewardPoints((ent, comp));
+            RewardPoints(item);
         }
 
     }
 
-
-    public void OnIntelAnalysisCompletion(EntityUid ent, IntelComponent comp, DoAfterAnalyzeIntelEvent args)
+    private void OnIntelAnalysisCompletion(EntityUid ent, IntelComponent comp, DoAfterAnalyzeIntelEvent args)
     {
         if (args.AnalyzingEntity is not EntityUid analyzer)
         {
@@ -71,10 +70,10 @@ public sealed partial class IntelSystem : SharedIntelSystem
         }
 
 
-        _mind.AddObjective(analyzer, mindComp, );
+        //_mind.AddObjective(analyzer, mindComp, );
     }
 
-    public void OnInteractIntelInHand(EntityUid ent, IntelComponent comp, UseInHandEvent args)
+    private void OnInteractIntelInHand(EntityUid ent, IntelComponent comp, UseInHandEvent args)
     {
         if (!_skills.HasSkills(ent, in RequiredIntelSkills))
         {
@@ -88,8 +87,10 @@ public sealed partial class IntelSystem : SharedIntelSystem
         {
             BreakOnMove = true
         };
-        _doAfter.TryStartDoAfter(doAfter);
-        _popupSystem.PopupClient(Loc.GetString("start-analyzing-intel"), ent);
+        if (_doAfter.TryStartDoAfter(doAfter))
+        {
+            _popupSystem.PopupClient(Loc.GetString("start-analyzing-intel"), ent);
+        }
 
     }
 
@@ -99,16 +100,12 @@ public sealed partial class IntelSystem : SharedIntelSystem
         {
             return false;
         }
-        if (IsWithinDropZone(ent.Owner))
+        RewardPoints(ent.Comp.PointReward);
+        if (ent.Comp.RewardSchedule == RewardSchedule.SINGLE)
         {
-            RewardPoints(ent.Comp.PointReward);
-            if (ent.Comp.RewardSchedule == RewardSchedule.SINGLE)
-            {
-                ent.Comp.RewardSchedule = RewardSchedule.NEVER;
-            }
-            return true;
+            ent.Comp.RewardSchedule = RewardSchedule.NEVER;
         }
-        return false;
+        return true;
     }
 
     /// <summary>
