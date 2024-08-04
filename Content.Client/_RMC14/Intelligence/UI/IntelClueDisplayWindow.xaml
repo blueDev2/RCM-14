@@ -3,9 +3,11 @@
     Margin="4 0"
     xmlns="https://spacestation14.io">
     <BoxContainer Orientation="Vertical">
-        <LineEdit Name="SearchBar" PlaceHolder="{Loc 'admin-add-reagent-window-search-placeholder'}" HorizontalExpand="True"  Margin ="0 4"/>
-        <ItemList Name="ReagentList" SelectMode="Single" VerticalExpand="True"  Margin ="0 4"/>
-        <Button Name="ApplyButton" HorizontalExpand="True" Margin ="0 4" />
-        <Button Name="ResetButton" HorizontalExpand="True" Margin ="0 4" />
+        <MenuBar Name ="IntelSelectionBar">
+            <!-- Types of intel are added here by code -->
+            <Menu Name="RetrievalMenu">
+                Retrieve
+            </Menu>
+        </MenuBar>
     </BoxContainer>
 </DefaultWindow>

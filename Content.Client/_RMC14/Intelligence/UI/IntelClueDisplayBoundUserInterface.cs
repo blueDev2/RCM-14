@@ -14,6 +14,7 @@ public sealed partial class IntelClueDisplayBoundUserInterface : BoundUserInterf
     public IntelClueDisplayBoundUserInterface(EntityUid owner, Enum key) : base(owner, key)
     {
     }
+
     protected override void Open()
     {
         base.Open();

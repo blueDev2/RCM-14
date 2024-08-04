@@ -20,11 +20,21 @@ public sealed partial class IntelComponent : Component
     /// Hints that will be included in the paper component of the intel.
     /// Should never be more than 4.
     /// </summary>
-    public List<LocId> IntelHintLocIDs = new();
+    public List<IntelClue> IntelClues = new();
 
     /// <summary>
-    /// The types of intel entities that can be targets of clues from this entity
+    /// The types of intel entities that can be targets of clues from
+    /// this entity with their associated spawn weights.
     /// </summary>
     [DataField]
-    public List<ProtoId<TagPrototype>> IntelWhitelist = new();
+    public Dictionary<ProtoId<TagPrototype>, int> IntelWeights = new();
+
+    /// <summary>
+    /// The point reward upon analyzing. Only awarded once.
+    /// </summary>
+    [DataField]
+    public decimal PointsOnAnalyze = 0.0M;
+
+    public bool AwardedPoints = false;
 }
+

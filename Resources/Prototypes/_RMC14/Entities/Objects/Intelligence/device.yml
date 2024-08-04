@@ -1,0 +1,22 @@
+- type: entity
+  parent: BaseItem
+  id: CMIntelDisplay
+  abstract: true
+  components:
+  - type: UserInterface
+    interfaces:
+      enum.IntelClueDisplayUIKey.Key:
+        type: IntelClueDisplayBoundUserInterface
+  - type: ActivatableUIRequiresSkills
+    requiredSkills:
+    intel: 2
+  - type: ActivatableUI
+    key: enum.IntelClueDisplayUIKey.Key
+  - type: IntelClueStorage
+
+- type: entity
+  parent: CMIntelDisplay
+  id: CMIntelScanner
+  name: intel scanner
+  components:
+  - type: IntelClueScanner

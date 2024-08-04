@@ -1,8 +1,10 @@
 using Content.Server._RMC14.Requisitions;
 using Content.Server.Paper;
 using Content.Shared._RMC14.Intelligence;
+using Content.Shared._RMC14.Intelligence.Components;
 using Content.Shared._RMC14.Marines.Skills;
 using Content.Shared.DoAfter;
+using Content.Shared.Interaction;
 using Content.Shared.Interaction.Events;
 using Content.Shared.Mind;
 using Content.Shared.Paper;
@@ -28,11 +30,18 @@ public sealed partial class IntelSystem : SharedIntelSystem
     private TimeSpan _nextUpdate = new(0, 0, 0);
     //private TimeSpan _intelLastTick = new(0, 0, 0);
 
+
     public override void Initialize()
     {
         base.Initialize();
-        SubscribeLocalEvent<IntelComponent, UseInHandEvent>(OnInteractIntelInHand);
-        SubscribeLocalEvent<IntelComponent, DoAfterAnalyzeIntelEvent>(OnIntelAnalysisCompletion);
+
+        // Scan intel with a IntelClueScanner entity
+        SubscribeLocalEvent<IntelClueScannerComponent, InteractUsingEvent>(OnInteractIntelWithScanner);
+        SubscribeLocalEvent<IntelClueScannerComponent, DoAfterAnalyzeIntelEvent>(OnIntelAnalysisCompletionOnScanner);
+
+        // Scan intel into a IntelClueUpload entity
+        SubscribeLocalEvent<IntelComponent, InteractUsingEvent>(OnInteractIntelOnUpload);
+        SubscribeLocalEvent<IntelClueUploadComponent, DoAfterAnalyzeIntelEvent>(OnIntelAnalysisCompletionOnUploader);
     }
 
     public override void Update(float frameTime)
@@ -58,32 +67,22 @@ public sealed partial class IntelSystem : SharedIntelSystem
 
     }
 
-    private void OnIntelAnalysisCompletion(EntityUid ent, IntelComponent comp, DoAfterAnalyzeIntelEvent args)
+    private void OnInteractIntelWithScanner(EntityUid ent, IntelClueScannerComponent scannerComp, ref InteractUsingEvent args)
     {
-        if (args.AnalyzingEntity is not EntityUid analyzer)
-        {
-            return;
-        }
-        if (!TryComp(analyzer, out MindComponent? mindComp))
+        if (!TryComp(args.Used, out IntelComponent? intelComp))
         {
             return;
         }
 
-
-        //_mind.AddObjective(analyzer, mindComp, );
-    }
-
-    private void OnInteractIntelInHand(EntityUid ent, IntelComponent comp, UseInHandEvent args)
-    {
-        if (!_skills.HasSkills(ent, in RequiredIntelSkills))
+        if (!_skills.HasSkills(args.User, in RequiredIntelSkills))
         {
-            _popupSystem.PopupClient(Loc.GetString("insufficient-intel-skill"), ent);
+            _popupSystem.PopupClient(Loc.GetString("insufficient-intel-skill"), args.User);
             return;
         }
 
         args.Handled = true;
-        var ev = new DoAfterAnalyzeIntelEvent(args.User);
-        var doAfter = new DoAfterArgs(EntityManager, ent, comp.AnalyzeDuration, ev, null)
+        var ev = new DoAfterAnalyzeIntelEvent(intelComp);
+        var doAfter = new DoAfterArgs(EntityManager, ent, intelComp.AnalyzeDuration, ev, null)
         {
             BreakOnMove = true
         };
@@ -91,7 +90,60 @@ public sealed partial class IntelSystem : SharedIntelSystem
         {
             _popupSystem.PopupClient(Loc.GetString("start-analyzing-intel"), ent);
         }
+    }
 
+    private void OnInteractIntelOnUpload(EntityUid ent, IntelComponent intelComp, ref InteractUsingEvent args)
+    {
+        if (!TryComp(args.Target, out IntelClueUploadComponent? intelUploadComp))
+        {
+            return;
+        }
+
+        if (!_skills.HasSkills(args.User, in RequiredIntelSkills))
+        {
+            _popupSystem.PopupClient(Loc.GetString("insufficient-intel-skill"), args.User);
+            return;
+        }
+
+        args.Handled = true;
+        var ev = new DoAfterAnalyzeIntelEvent(intelComp);
+        var doAfter = new DoAfterArgs(EntityManager, args.Target, intelComp.AnalyzeDuration, ev, null)
+        {
+            BreakOnMove = true
+        };
+        if (_doAfter.TryStartDoAfter(doAfter))
+        {
+            _popupSystem.PopupClient(Loc.GetString("start-analyzing-intel"), ent);
+        }
+    }
+
+    private void OnIntelAnalysisCompletionOnScanner(EntityUid ent, IntelClueScannerComponent comp, DoAfterAnalyzeIntelEvent args)
+    {
+        OnIntelAnalysisCompletion(ent, args.Intel);
+    }
+
+    private void OnIntelAnalysisCompletionOnUploader(EntityUid ent, IntelClueUploadComponent comp, DoAfterAnalyzeIntelEvent args)
+    {
+        OnIntelAnalysisCompletion(ent, args.Intel);
+    }
+
+    private void OnIntelAnalysisCompletion(EntityUid ent, IntelComponent intelComp)
+    {
+        var clueStorageComp = EnsureComp<IntelClueStorageComponent>(ent);
+        AddCluesToStorage(intelComp, clueStorageComp);
+        if (!intelComp.AwardedPoints)
+        {
+            RewardPoints(intelComp.PointsOnAnalyze);
+            intelComp.AwardedPoints = true;
+        }
+    }
+
+    private void AddCluesToStorage(IntelComponent intelComp, IntelClueStorageComponent intelClueStorageComp)
+    {
+        foreach (var clue in intelComp.IntelClues)
+        {
+            intelClueStorageComp.Clues.Add(clue);
+        }
     }
 
     private bool RewardPoints(Entity<GiveIntelOnRetrievalComponent> ent)

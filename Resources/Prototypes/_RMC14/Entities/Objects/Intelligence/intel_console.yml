@@ -1,0 +1,15 @@
+- type: entity
+  parent: [BaseComputer, IntelDisplay]
+  id: CMIntelClueUploadConsole
+  name: intel upload console
+  description: The intel upload console, intel clues uploaded onto this are broadcasted to all intel scanners.
+  components:
+  #- type: Sprite
+  #  drawdepth: SmallObjects
+  #  sprite: _RMC14/Structures/Machines/rmc_groundside_communications_console.rsi
+  #  state: on
+  #  layers: [ ]
+  - type: IntelClueUpload
+  - type: ApcPowerReceiver
+    powerLoad: 0
+    needsPower: false # TODO RMC14

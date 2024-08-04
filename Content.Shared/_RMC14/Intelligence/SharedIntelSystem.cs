@@ -24,6 +24,12 @@ public abstract partial class SharedIntelSystem : EntitySystem
     //[Dependency] private readonly SharedPopupSystem _popupSystem = default!;
     //[Dependency] private readonly SharedUserInterfaceSystem _uiSystem = default!;
     //[Dependency] private readonly SharedObjectivesSystem _objectivesSystem = default!;
+
+    public enum IntelClueDisplayUIKey : byte
+    {
+        Key
+    }
+
     [Dependency] private readonly SharedTransformSystem _transform = default!;
 
 
@@ -35,8 +41,9 @@ public abstract partial class SharedIntelSystem : EntitySystem
     {
         base.Initialize();
 
-        //SubscribeLocalEvent<>();
     }
+
+
 
     public List<Entity<GiveIntelOnRetrievalComponent>> GetAllRetrievalTargetsInDropZones()
     {
