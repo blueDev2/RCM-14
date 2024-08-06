@@ -72,3 +72,18 @@
 
 - type: Tag
   id: RMCRocketAmmo84mm
+
+- type: Tag
+  id: RMCIntelPaperScraps
+
+- type: Tag
+  id: RMCIntelProgressReports
+
+- type: Tag
+  id: RMCIntelFolders
+
+- type: Tag
+  id: RMCIntelDataDisks
+
+- type: Tag
+  id: RMCIntelTechnicalManual

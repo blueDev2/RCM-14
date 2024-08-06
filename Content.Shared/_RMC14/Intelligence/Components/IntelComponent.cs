@@ -18,7 +18,7 @@ public sealed partial class IntelComponent : Component
 
     /// <summary>
     /// Hints that will be included in the paper component of the intel.
-    /// Should never be more than 4.
+    /// (Randomly 2-4 clues are added on spawn)
     /// </summary>
     public List<IntelClue> IntelClues = new();
 

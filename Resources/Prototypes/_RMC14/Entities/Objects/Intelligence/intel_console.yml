@@ -10,6 +10,9 @@
   #  state: on
   #  layers: [ ]
   - type: IntelClueUpload
+  - type: IntelClueStorage
+    sendToServer: true
+    recieveFromServer: false
   - type: ApcPowerReceiver
     powerLoad: 0
     needsPower: false # TODO RMC14
