@@ -72,7 +72,7 @@
         - !type:SpillBehavior { }
         - !type:SpawnEntitiesBehavior
           spawn:
-            SheetPlastic1:
+            RMCSheetPlastic1:
               min: 0
               max: 1
           transferForensics: true
@@ -82,6 +82,10 @@
     - type: Tag
       tags:
       - ChemDispensable
+    - type: InteractedBlacklist
+      blacklist:
+        components:
+        - Xeno
 
 - type: entity
   parent: RMCJug

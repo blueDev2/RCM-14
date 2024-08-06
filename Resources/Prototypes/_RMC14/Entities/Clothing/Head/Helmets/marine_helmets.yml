@@ -58,6 +58,19 @@
       - CMAutoInjector
       - PillPacket
   - type: FixedItemSizeStorage
+  - type: InteractedBlacklist
+    blacklist:
+      components:
+      - Xeno
+  - type: OverwatchCamera
+  - type: SquadArmor
+    layer: Helmet
+    rsi:
+      sprite: _RMC14/Objects/Clothing/Head/Helmets/helmet_overlays.rsi
+      state: std-helmet
+    leaderRsi:
+      sprite: _RMC14/Objects/Clothing/Head/Helmets/helmet_overlays.rsi
+      state: sql-helmet
 
 - type: entity
   parent: ArmorHelmetM10
@@ -109,6 +122,14 @@
   - type: ShowHealthIcons # TODO RMC14 Hack
     damageContainers:
     - Biological
+  - type: SquadArmor
+    layer: Helmet
+    rsi:
+      sprite: _RMC14/Objects/Clothing/Head/Helmets/helmet_overlays.rsi
+      state: std-helmet-medic
+    leaderRsi:
+      sprite: _RMC14/Objects/Clothing/Head/Helmets/helmet_overlays.rsi
+      state: sql-helmet-medic
 
 - type: entity
   parent: ArmorHelmetM10
@@ -170,7 +191,7 @@
   - type: Clothing
     sprite: _RMC14/Objects/Clothing/Head/Helmets/press.rsi
 
-# m3
+# M3-S Scout Spec
 - type: entity
   parent: ArmorHelmetM10
   id: CMArmorHelmetM3Scout
@@ -182,6 +203,7 @@
   - type: Clothing
     sprite: _RMC14/Objects/Clothing/Head/Helmets/m3/scout.rsi
 
+# M3-G4 Grenadier Spec
 - type: entity
   parent: CMArmorHelmetM3Scout
   id: RMCArmorHelmetM3G4
@@ -195,7 +217,8 @@
   - type: CMArmor
     armor: 25
     explosionArmor: 50
-# m35
+
+# M35 Pyro Spec
 - type: entity
   parent: ArmorHelmetM10
   id: CMArmorHelmetM35
@@ -207,7 +230,7 @@
   - type: Clothing
     sprite: _RMC14/Objects/Clothing/Head/Helmets/m35.rsi
 
-# m45
+# M45 Sniper Spec
 - type: entity
   parent: ArmorHelmetM10
   id: CMArmorHelmetM45
@@ -218,3 +241,16 @@
     sprite: _RMC14/Objects/Clothing/Head/Helmets/m45.rsi
   - type: Clothing
     sprite: _RMC14/Objects/Clothing/Head/Helmets/m45.rsi
+
+# M3-T Demo Spec
+- type: entity
+  parent: ArmorHelmetM10
+  id: RMCArmorHelmetM3TDemo
+  name: M3-T bombardier helmet
+  description: A custom-built helmet for explosive weaponry users. Comes with inbuilt ear blast protection, firing a rocket launcher without this is not recommended.
+  components:
+  - type: Sprite
+    sprite: _RMC14/Objects/Clothing/Head/Helmets/m3/t_demo.rsi
+  - type: Clothing
+    sprite: _RMC14/Objects/Clothing/Head/Helmets/m3/t_demo.rsi
+# TODO RMC14 Give hearing protection component if ear damage is added
