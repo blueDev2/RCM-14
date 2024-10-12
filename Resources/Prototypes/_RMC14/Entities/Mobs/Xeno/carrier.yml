@@ -1,10 +1,11 @@
 ﻿- type: entity
+  abstract: true
   parent:
   - CMXenoDeveloped
   - CMXenoTail
   - CMXenoFlammable
   - RMCXenoSpeechSounds
-  id: CMXenoCarrier
+  id: RMCXenoCarrierBase
   name: Carrier
   description: A strange-looking alien creature. It carries a number of scuttling jointed crablike creatures.
   components:
@@ -86,7 +87,6 @@
       components:
       - XenoParasite
       - XenoEgg
-  - type: XenoParasiteThrower
   - type: XenoEggRetriever
   - type: XenoNurturing
   - type: RMCSize
@@ -97,3 +97,41 @@
     icon:
       sprite: _RMC14/Interface/map_blips.rsi
       state: carrier
+
+- type: entity
+  parent: RMCXenoCarrierBase
+  id: RMCXenoCarrier
+  name: Carrier
+  components:
+  - type: XenoParasiteThrower
+  - type: XenoEvolution
+    strains:
+    - RMCXenoCarrierEggsac
+
+- type: entity
+  parent: RMCXenoCarrierBase
+  id: RMCXenoCarrierEggsac
+  suffix: Eggsac
+  components:
+  - type: Sprite
+    sprite: _RMC14/Mobs/Xenonids/Carrier/eggsac_carrier.rsi
+  - type: Xeno
+    role: CMXenoCarrier
+    actionIds:
+    - ActionXenoRest
+    - ActionXenoRegurgitate
+    - ActionXenoWatch
+    - ActionXenoTailStab
+    - ActionXenoOrderConstruction
+    - ActionXenoPheromones
+    - ActionXenoPlantWeeds
+    - ActionXenoRetrieveEgg
+    - ActionXenoDevolve
+    tier: 2
+    hudOffset: 0,0.19
+    unlockAt: 300 # 5 minutes
+  - type: XenoPheromones
+    pheromonesMultiplier: 3
+  - type: XenoEggRetriever
+    maxEggs: 12
+  - type: XenoFragileEggGenerator

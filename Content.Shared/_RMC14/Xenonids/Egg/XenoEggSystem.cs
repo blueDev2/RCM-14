@@ -254,6 +254,12 @@ public sealed class XenoEggSystem : EntitySystem
         SetEggState(egg, XenoEggState.Growing);
         _transform.AnchorEntity(egg, Transform(egg));
         _audio.PlayPredicted(egg.Comp.PlantSound, egg, args.User);
+
+        var xenoEv = new PlacedXenoEggEvent(_entities.GetNetEntity(egg.Owner));
+        RaiseLocalEvent(args.User, xenoEv);
+
+        var eggEv = new XenoEggPlacedEvent(_entities.GetNetEntity(args.User));
+        RaiseLocalEvent(egg.Owner, eggEv);
     }
 
     private void OnXenoEggActivateInWorld(Entity<XenoEggComponent> egg, ref ActivateInWorldEvent args)
