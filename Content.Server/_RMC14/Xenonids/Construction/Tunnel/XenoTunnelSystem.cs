@@ -18,9 +18,11 @@ using Content.Shared.Database;
 using Content.Shared.DoAfter;
 using Content.Shared.Interaction;
 using Content.Shared.Item.ItemToggle.Components;
+using Content.Shared.Maps;
 using Content.Shared.Movement.Events;
 using Content.Shared.Popups;
 using Content.Shared.Verbs;
+using Robust.Server.GameObjects;
 using Robust.Shared.Containers;
 using Robust.Shared.Map;
 using Robust.Shared.Map.Components;
@@ -43,8 +45,10 @@ public sealed partial class XenoTunnelSystem : SharedXenoTunnelSystem
     [Dependency] private readonly SharedXenoConstructionSystem _xenoConstruct = default!;
     [Dependency] private readonly SharedUserInterfaceSystem _ui = default!;
     [Dependency] private readonly SharedActionsSystem _action = default!;
-    [Dependency] private readonly AreaSystem _area = default!;
     [Dependency] private readonly PlayerSystem _player = default!;
+    [Dependency] private readonly MapSystem _map = default!;
+    [Dependency] private readonly ITileDefinitionManager _tile = default!;
+
     public int NextTempTunnelId
     { get; private set; }
     public override void Initialize()
@@ -98,15 +102,6 @@ public sealed partial class XenoTunnelSystem : SharedXenoTunnelSystem
 
         if (!_xenoPlasma.HasPlasmaPopup(xenoBuilder.Owner, args.PlasmaCost, false))
             return;
-
-        if (_area.TryGetArea(location, out var area, out _, out _))
-        {
-            if (area.NoTunnel)
-            {
-                _popup.PopupEntity(Loc.GetString("rmc-xeno-construction-bad-area"), xenoBuilder, xenoBuilder);
-                return;
-            }
-        }
 
         if (_xenoWeeds.GetWeedsOnFloor((gridId, grid), location, true) is EntityUid weedSource)
         {
@@ -577,6 +572,28 @@ public sealed partial class XenoTunnelSystem : SharedXenoTunnelSystem
             _popup.PopupEntity(Loc.GetString(popupType), user, user, PopupType.SmallCaution);
             return false;
         }
+
+        popupType = "rmc-xeno-construction-bad-area";
+
+        var grid = _transform.GetGrid(coords);
+
+        if (grid is null)
+        {
+            _popup.PopupEntity(Loc.GetString(popupType), user, user, PopupType.SmallCaution);
+            return false;
+        }
+
+        var gridComp = EnsureComp<MapGridComponent>(grid.Value);
+        var tilePos = _map.CoordinatesToTile(grid.Value, gridComp, coords);
+
+        if (!_map.TryGetTileRef(grid.Value, gridComp, tilePos, out var tileRef) ||
+            !_tile.TryGetDefinition(tileRef.Tile.TypeId, out var tileDef) ||
+            tileDef is ContentTileDefinition { CanPlaceTunnel: false })
+        {
+            _popup.PopupEntity(Loc.GetString(popupType), user, user, PopupType.SmallCaution);
+            return false;
+        }
+
         return true;
     }
     public bool TryPlaceTunnel(Entity<HiveMemberComponent?> builder, string name, [NotNullWhen(true)] out EntityUid? tunnelEnt)
