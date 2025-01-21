@@ -1,4 +1,5 @@
-﻿using Content.Server.Movement.Components;
+using Content.Server._RMC14.CollisionPrediction;
+using Content.Server.Movement.Components;
 using Content.Server.Weapons.Ranged.Systems;
 using Content.Shared._RMC14.CCVar;
 using Content.Shared._RMC14.Weapons.Ranged.Prediction;
@@ -25,6 +26,7 @@ public sealed class GunPredictionSystem : SharedGunPredictionSystem
     [Dependency] private readonly SharedProjectileSystem _projectile = default!;
     [Dependency] private readonly IGameTiming _timing = default!;
     [Dependency] private readonly TransformSystem _transform = default!;
+    [Dependency] private readonly CollisionPredictionSystem _collisionPredict = default!;
 
     private readonly Dictionary<(Guid, int), EntityUid> _predicted = new();
     private readonly List<(PredictedProjectileHitEvent Event, ICommonSession Player)> _predictedHits = new();
@@ -122,7 +124,7 @@ public sealed class GunPredictionSystem : SharedGunPredictionSystem
         if (!_physicsQuery.TryComp(ent, out var entPhysics))
             return;
 
-        if (!Collides(
+        if (!PredictCollision(
                 (ent, ent, entPhysics),
                 (other, otherLagComp, otherFixtures, args.OtherBody, otherTransform),
                 null))
@@ -131,66 +133,19 @@ public sealed class GunPredictionSystem : SharedGunPredictionSystem
         }
     }
 
-    private bool Collides(
+    private bool PredictCollision(
         Entity<PredictedProjectileServerComponent, PhysicsComponent> projectile,
         Entity<LagCompensationComponent, FixturesComponent, PhysicsComponent, TransformComponent> other,
         MapCoordinates? clientCoordinates)
     {
-        var projectileCoordinates = _transform.GetMapCoordinates(projectile);
-        var projectilePosition = projectileCoordinates.Position;
-
-        MapCoordinates lowestCoordinate = default;
-        var otherCoordinates = EntityCoordinates.Invalid;
         var ping = projectile.Comp1.Shooter?.Channel.Ping ?? 0;
-        // Use 1.5 due to the trip buffer.
-        var sentTime = _timing.CurTime - TimeSpan.FromMilliseconds(ping * 1.5);
-        var pingTime = TimeSpan.FromMilliseconds(ping);
-
-        foreach (var pos in other.Comp1.Positions)
-        {
-            otherCoordinates = pos.Item2;
-            if (pos.Item1 >= sentTime)
-                break;
-            else if (lowestCoordinate == default && pos.Item1 >= sentTime - pingTime)
-                lowestCoordinate = _transform.ToMapCoordinates(pos.Item2);
-        }
-
-        var otherMapCoordinates = otherCoordinates == default
-            ? _transform.GetMapCoordinates(other)
-            : _transform.ToMapCoordinates(otherCoordinates);
-
-        if (clientCoordinates != null &&
-            (clientCoordinates.Value.InRange(otherMapCoordinates, _coordinateDeviation) ||
-             clientCoordinates.Value.InRange(lowestCoordinate, _lowestCoordinateDeviation)))
-        {
-            otherMapCoordinates = clientCoordinates.Value;
-        }
-
-        var transform = new Transform(otherMapCoordinates.Position, 0);
-        var bounds = new Box2(transform.Position, transform.Position);
-
-        foreach (var fixture in other.Comp2.Fixtures.Values)
-        {
-            if ((fixture.CollisionLayer & projectile.Comp2.CollisionMask) == 0)
-                continue;
-
-            for (var i = 0; i < fixture.Shape.ChildCount; i++)
-            {
-                var boundy = fixture.Shape.ComputeAABB(transform, i);
-                bounds = bounds.Union(boundy);
-            }
-        }
-
-        bounds = bounds.Enlarged(_aabbEnlargement);
-        if (bounds.Contains(projectilePosition))
-            return true;
-
-        var projectileVelocity = _physics.GetLinearVelocity(projectile, projectile.Comp2.LocalCenter);
-        projectilePosition = projectileCoordinates.Position + projectileVelocity / _timing.TickRate / 1.5f;
-        if (bounds.Contains(projectilePosition))
-            return true;
-
-        return false;
+        return _collisionPredict.PredictCollision((projectile.Owner, projectile.Comp2),
+                                                    other,
+                                                    clientCoordinates,
+                                                    ping,
+                                                    _coordinateDeviation,
+                                                    _lowestCoordinateDeviation,
+                                                    _aabbEnlargement);
     }
 
     private void ProcessPredictedHit(PredictedProjectileHitEvent ev, ICommonSession player)
@@ -227,7 +182,7 @@ public sealed class GunPredictionSystem : SharedGunPredictionSystem
                 continue;
             }
 
-            if (!Collides(
+            if (!PredictCollision(
                     (projectile, predictedProjectile, projectilePhysics),
                     (hit, otherLagComp, otherFixtures, otherPhysics, otherTransform),
                     clientPos))
