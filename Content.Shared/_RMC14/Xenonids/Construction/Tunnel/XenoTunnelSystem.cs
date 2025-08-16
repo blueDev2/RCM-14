@@ -127,12 +127,14 @@ public sealed class XenoTunnelSystem : EntitySystem
 
     private void OnTunnelUIOpened(Entity<XenoTunnelComponent> tunnel, ref BoundUIOpenedEvent args)
     {
-        EnsureComp<TunnelUIUserComponent>(args.Actor);
+        if (_net.IsServer)
+            EnsureComp<TunnelUIUserComponent>(args.Actor);
     }
 
     private void OnTunnelUIClosed(Entity<XenoTunnelComponent> tunnel, ref BoundUIClosedEvent args)
     {
-        RemCompDeferred<TunnelUIUserComponent>(args.Actor);
+        if (_net.IsServer)
+            RemCompDeferred<TunnelUIUserComponent>(args.Actor);
     }
 
     private void OnExamine(Entity<XenoTunnelComponent> xenoTunnel, ref ExaminedEvent args)
